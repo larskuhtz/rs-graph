@@ -314,7 +314,6 @@ impl AdjacencyRep for SortedVector {
     }
 }
 
-#[cfg(test)]
 #[cfg(feature = "bench")]
 mod benches {
     use super::*;
