@@ -1,0 +1,32 @@
+[package]
+name = "graph-algorithms"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+authors = ["Lars Kuhtz <lakuhtz@gmail.com>"]
+
+[lib]
+name = "graph"
+path = "src/lib.rs"
+
+[features]
+bench = ["dep:divan"]
+
+[[bench]]
+name = "adjacency_set"
+harness = false
+required-features = ["bench"]
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--html-in-header", "katex-header.html"]
+
+[dependencies]
+rand_core = { version = "0.10" }
+rand = { version = "0.10" }
+divan = { version = "0.1", features = ["json"], optional = true }
+fxhash = "0.2"
+itertools = "0.14"
+rand_pcg = "0.10"
+
+[patch.crates-io]
+divan = { path = "../../../Misc/divan" }
