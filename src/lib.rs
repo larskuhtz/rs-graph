@@ -32,6 +32,7 @@
 pub mod sparse;
 pub mod named;
 pub mod random;
+pub mod dot;
 
 /// A trait for tagging graph types. This is used for type-level dispatch and
 /// enforcing constraints. This will not be needed once Rust support for
