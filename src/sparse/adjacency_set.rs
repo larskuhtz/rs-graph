@@ -13,6 +13,7 @@ use std::{hash::BuildHasher};
 
 pub trait AdjacencyRep
 where
+    Self: PartialEq + Eq + Clone,
     Self: IntoIterator<Item = usize> + FromIterator<usize>,
 {
     type Iter<'a>: Iterator<Item = usize> where Self: 'a;
@@ -47,6 +48,10 @@ where
 ///
 /// It is the responsibility of the user to ensure that no duplicate edges
 /// are added to the graph.
+///
+/// # FIXME
+///
+/// This implementation currently violates the requirements for equality.
 ///
 impl AdjacencyRep for Vec<usize> {
     type Iter<'a> = std::vec::IntoIter<usize> where Self: 'a;
@@ -110,7 +115,7 @@ impl AdjacencyRep for Vec<usize> {
     }
 }
 
-impl<H: BuildHasher + Default> AdjacencyRep for std::collections::HashSet<usize, H> {
+impl<H: BuildHasher + Default + Clone> AdjacencyRep for std::collections::HashSet<usize, H> {
     type Iter<'a> = std::iter::Copied<std::collections::hash_set::Iter<'a, usize>>
        where Self: 'a;
 
@@ -202,6 +207,7 @@ impl AdjacencyRep for std::collections::BTreeSet<usize> {
     }
 }
 
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct SortedVector(Vec<usize>);
 
 impl IntoIterator for SortedVector {

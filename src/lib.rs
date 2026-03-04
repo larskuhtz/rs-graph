@@ -33,6 +33,16 @@ pub mod sparse;
 pub mod named;
 pub mod random;
 
+/// A trait for tagging graph types. This is used for type-level dispatch and
+/// enforcing constraints. This will not be needed once Rust support for
+/// const generics is stabilized.
+pub trait GraphType {}
+pub struct Directed;
+pub struct Undirected;
+impl GraphType for Directed {}
+impl GraphType for Undirected {}
+
+
 #[derive(Debug, Clone)]
 pub enum DfsEvent {
     /// An edge from `source` to `target` was discovered.
@@ -50,11 +60,17 @@ pub enum DfsEvent {
 ///
 /// # Note to Implementors
 ///
+/// Two graphs are equal when they have the same set of vertices and the same
+/// set of edges. The implementation of `PartialEq` and `Eq` must be compatible
+/// with this definition.
+///
 /// The default implementatios are provided as semantic references and are
 /// generally not efficient. They should be overridden by implementors for
 /// better performance.
 ///
-pub trait Graph {
+pub trait Graph: PartialEq + Eq + Clone {
+    type Type: GraphType;
+    const IS_DIRECTED: bool;
     fn empty(order: usize) -> Self;
     fn from_edges(edges: impl IntoIterator<Item = (usize, usize)>) -> Self;
     fn from_edges_with_order(order: usize, edges: impl IntoIterator<Item = (usize, usize)>) -> Self;
@@ -102,6 +118,19 @@ pub trait Graph {
     fn dfs<F: FnMut(DfsEvent) -> bool>(&self, vertex: usize, hook: F);
 
     fn complete_edge_count(&self) -> usize;
+
+    fn equal<G>(&self, other: &G) -> bool
+    where
+        G: Graph,
+        G: Graph<Type = Self::Type>
+    {
+        self.order() == other.order()
+        && self.size() == other.size()
+
+        // for implementations it may be more efficient to sort all edges into a
+        // vector and compare the vectors.
+        && self.edges().all(|e| other.is_edge(e.0, e.1))
+    }
 }
 
 pub trait MutableGraph: Graph {
@@ -129,7 +158,9 @@ pub trait DirectedMutableGraph: MutableGraph {
 /// graph may contain loops, i.e. edges of the from $(v, v)$ from a some vertex
 /// to itself.
 ///
-pub trait DirectedGraph: Graph {
+pub trait DirectedGraph
+    where Self: Graph<Type = Directed>
+{
     fn out_degree(&self, vertex: usize) -> usize {
         self.adjacents(vertex).count()
     }
@@ -200,7 +231,9 @@ pub trait DirectedGraph: Graph {
 /// because edges are sets, an undirected graph does not contain loops where an
 /// edge connects a vertex to itself.
 ///
-pub trait UndirectedGraph: Graph {
+pub trait UndirectedGraph
+    where Self: Graph<Type = Undirected>
+{
     fn degree(&self, vertex: usize) -> usize {
         self.adjacents(vertex).count()
     }

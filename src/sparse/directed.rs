@@ -1,6 +1,7 @@
 use std::iter::repeat_with;
 
 use super::adjacency_set::AdjacencyRep;
+use crate::Directed;
 use crate::DirectedGraph;
 use crate::DirectedMutableGraph;
 use crate::Graph;
@@ -23,25 +24,28 @@ use rand::distr::Uniform;
 /// representation. On large graphs it can be beneficial to swich the
 /// representation based on algorithmic needs.
 ///
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AdjacencySets<T = FxHashSet<usize>> (Vec<T>)
-where T: AdjacencyRep + Clone;
+where T: AdjacencyRep;
 
-impl<T: AdjacencyRep + Clone> FromIterator<(usize, usize)> for AdjacencySets<T> {
+impl<T: AdjacencyRep> FromIterator<(usize, usize)> for AdjacencySets<T> {
     #[inline]
     fn from_iter<I: IntoIterator<Item = (usize, usize)>>(iter: I) -> Self {
         Self::from_edges(iter)
     }
 }
 
-impl<T: AdjacencyRep + Clone> FromIterator<T> for AdjacencySets<T> {
+impl<T: AdjacencyRep> FromIterator<T> for AdjacencySets<T> {
     #[inline]
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
         Self::from_adjacency_lists(iter)
     }
 }
 
-impl<T: AdjacencyRep + Clone> Graph for AdjacencySets<T> {
+impl<T: AdjacencyRep> Graph for AdjacencySets<T> {
+
+    type Type = Directed;
+    const IS_DIRECTED: bool = true;
 
     fn empty(order: usize) -> Self {
         AdjacencySets(vec![T::empty_set(); order])
@@ -146,7 +150,7 @@ impl<T: AdjacencyRep + Clone> Graph for AdjacencySets<T> {
     }
 }
 
-impl<T: AdjacencyRep + Clone> MutableGraph for AdjacencySets<T> {
+impl<T: AdjacencyRep> MutableGraph for AdjacencySets<T> {
     fn add_edge(&mut self, source: usize, target: usize) -> bool {
         self.0[source].add_adjacent(target)
     }
@@ -156,7 +160,7 @@ impl<T: AdjacencyRep + Clone> MutableGraph for AdjacencySets<T> {
     }
 }
 
-impl<T: AdjacencyRep + Clone> DirectedMutableGraph for AdjacencySets<T> {
+impl<T: AdjacencyRep> DirectedMutableGraph for AdjacencySets<T> {
     fn symmetric_hull_mut(&mut self) {
         for i in 0..self.order() {
             for j in 0..self.0[i].degree() {
@@ -167,7 +171,7 @@ impl<T: AdjacencyRep + Clone> DirectedMutableGraph for AdjacencySets<T> {
 }
 
 impl<T> DirectedGraph for AdjacencySets<T>
-where T: AdjacencyRep + Clone,
+where T: AdjacencyRep,
 {
     fn out_degree(&self, vertex: usize) -> usize {
         self.0[vertex].degree()
@@ -245,7 +249,7 @@ where T: AdjacencyRep + Clone,
 
 impl<T> RandomGraph for AdjacencySets<T>
 where
-    T: AdjacencyRep + Clone,
+    T: AdjacencyRep,
 {
 
     /// Random graph in the $G_{n,p}$ model. Each edge is included with
@@ -307,7 +311,7 @@ where
     }
 }
 
-impl<T: AdjacencyRep + Clone> AdjacencySets<T> {
+impl<T: AdjacencyRep> AdjacencySets<T> {
 
     /// An implementation of Tarjan's algorithm for finding strongly connected
     /// components (SCCs).

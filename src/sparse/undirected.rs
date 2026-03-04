@@ -2,6 +2,7 @@ use crate::DfsEvent;
 use crate::DirectedGraph;
 use crate::Graph;
 use crate::MutableGraph;
+use crate::Undirected;
 use crate::UndirectedGraph;
 use crate::random::RandomGraph;
 use crate::undirected_complete_edge_count;
@@ -35,11 +36,11 @@ use super::directed;
 /// or even skip allocation at all. The main drawback would be that adjacency
 /// checks would become more expensive.
 ///
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AdjacencySets<T = FxHashSet<usize>>(directed::AdjacencySets<T>)
-where T: AdjacencyRep + Clone;
+where T: AdjacencyRep;
 
-impl<T: AdjacencyRep + Clone> UndirectedGraph for AdjacencySets<T> {
+impl<T: AdjacencyRep> UndirectedGraph for AdjacencySets<T> {
     fn degree(&self, vertex: usize) -> usize {
         self.0.out_degree(vertex)
     }
@@ -80,7 +81,10 @@ impl<T: AdjacencyRep + Clone> UndirectedGraph for AdjacencySets<T> {
     }
 }
 
-impl<T: AdjacencyRep + Clone> Graph for AdjacencySets<T> {
+impl<T: AdjacencyRep> Graph for AdjacencySets<T> {
+
+    type Type = Undirected;
+    const IS_DIRECTED: bool = false;
 
     fn empty(order: usize) -> Self {
         AdjacencySets(directed::AdjacencySets::<T>::empty(order))
@@ -157,7 +161,7 @@ impl<T: AdjacencyRep + Clone> Graph for AdjacencySets<T> {
 
 impl<T> RandomGraph for AdjacencySets<T>
 where
-    T: AdjacencyRep + Clone,
+    T: AdjacencyRep,
 {
     /// Random graph in the $G_{n,p}$ model. Each edge is included with
     /// probability $p$. For $p = \frac{1}{2}$, this is the uniform distribution
@@ -279,7 +283,7 @@ fn try_rrg_with_rng<T, R>(
     rng: R
 ) -> Option<AdjacencySets<T>>
 where
-    T: AdjacencyRep + Clone,
+    T: AdjacencyRep,
     R: Rng
 {
     let mut g = AdjacencySets::<T>::empty(order);
@@ -291,7 +295,7 @@ where
     Some(g)
 }
 
-impl<T: AdjacencyRep + Clone> MutableGraph for AdjacencySets<T> {
+impl<T: AdjacencyRep> MutableGraph for AdjacencySets<T> {
     fn add_edge(&mut self, source: usize, target: usize) -> bool{
         self.0.add_edge(source, target);
         self.0.add_edge(target, source)
