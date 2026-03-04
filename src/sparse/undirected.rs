@@ -200,7 +200,7 @@ where
         Self::from_edges_with_order(order, edges)
     }
 
-    /// Uniformly distributed random directed regular graphs.
+    /// Uniformly distributed random undirected regular graphs.
     ///
     /// This function panics if the parameters do not allow for a regular graph,
     /// i.e. if both the degree and the order are odd.
