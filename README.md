@@ -10,6 +10,6 @@ various algorithms.
 The set of provided features is opportunistic. Being comprehensive is currently
 not a goal.
 
-Graphs in this library a relations over prefixes of the natural numbers. There
-is no support for representing labelings of nodes or edges. The focus is on the
-core graph representations and the respective algorithms.
+The vertex set of a graph in this library is a prefix of the natural numbers.
+There is no support for representing labelings of nodes or edges. The focus is
+on the core graph representations and the respective algorithms.
